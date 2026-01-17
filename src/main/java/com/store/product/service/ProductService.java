@@ -51,6 +51,33 @@ public class ProductService {
         return mapToResponse(product);
     }
 
+    public ProductResponse getByName(String name) {
+        Product product = productRepository.findByName(name)
+                .orElseThrow(() -> new ProductException("Product not found"));
+        return mapToResponse(product);
+    }
+
+    public List<String> getAllCategories() {
+        return productRepository.getAllCategories();
+               
+    }
+
+    public List<String> getByCategory(String category) {
+        List<String> brands = productRepository.findByCategory(category);
+        if (brands.isEmpty()) {
+            throw new ProductException("No products found");
+        }
+        return brands;
+    }
+
+    public List<String> getByBrand(String brand) {
+        List<String> names = productRepository.findByBrand(brand);
+        if (names.isEmpty()) {
+            throw new ProductException("No products found");
+        }
+        return names;
+    }
+
     public ProductResponse update(Long id, ProductRequest request) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductException("Product not found"));
