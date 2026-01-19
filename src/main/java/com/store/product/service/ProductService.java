@@ -4,10 +4,14 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
+import com.store.product.dto.CategoryRequest;
+import com.store.product.dto.CategoryResponse;
 import com.store.product.dto.ProductRequest;
 import com.store.product.dto.ProductResponse;
+import com.store.product.entity.Category;
 import com.store.product.entity.Product;
 import com.store.product.exception.ProductException;
+import com.store.product.repository.CategoryRepository;
 import com.store.product.repository.ProductRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -18,8 +22,11 @@ public class ProductService {
 
     private final ProductRepository productRepository;
 
-    public ProductResponse create(ProductRequest request) {
+    private final CategoryRepository categoryRepository;;
 
+    
+
+    public ProductResponse create(ProductRequest request) {
         if (productRepository.existsBySku(request.getSku())) {
             throw new ProductException("Product SKU already exists");
         }
@@ -57,10 +64,7 @@ public class ProductService {
         return mapToResponse(product);
     }
 
-    public List<String> getAllCategories() {
-        return productRepository.getAllCategories();
-               
-    }
+    
 
     public List<String> getByCategory(String category) {
         List<String> brands = productRepository.findByCategory(category);
@@ -112,5 +116,19 @@ public class ProductService {
                 .price(product.getPrice())
                 .status(product.getStatus())
                 .build();
+    }
+
+    public CategoryResponse createCategory(CategoryRequest request) {
+        Category category = categoryRepository.save(Category.builder()
+                .name(request.getCategory())
+                .build());
+        return new CategoryResponse(category.getId(), category.getName());
+    }
+
+    public List<CategoryResponse> getAllCategories() {
+        return categoryRepository.findAll()
+                .stream()
+                .map(category -> new CategoryResponse(category.getId(), category.getName()))
+                .toList();
     }
 }
