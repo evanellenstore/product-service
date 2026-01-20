@@ -13,4 +13,5 @@ public class ProductRequest {
     private String unit;
     private Double price;
     private String status;
+    // barcode size is fixed on server (no client-specified sizing)
 }

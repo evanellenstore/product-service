@@ -14,6 +14,11 @@ import com.store.product.exception.ProductException;
 import com.store.product.repository.CategoryRepository;
 import com.store.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import java.io.ByteArrayOutputStream;
 
 @Service
 @RequiredArgsConstructor
@@ -37,6 +42,20 @@ public class ProductService {
             throw new ProductException("Product SKU already exists");
         }
 
+        // generate barcode PNG for SKU
+        byte[] barcodeBytes = null;
+        try {
+            int bw = 400;
+            int bh = 100;
+            BitMatrix bitMatrix = new MultiFormatWriter().encode(sku, BarcodeFormat.CODE_128, bw, bh);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", baos);
+            barcodeBytes = baos.toByteArray();
+        } catch (Exception e) {
+            // non-fatal — proceed without barcode
+            barcodeBytes = null;
+        }
+
         Product product = productRepository.save(Product.builder()
                 .sku(sku)
                 .name(request.getName())
@@ -46,6 +65,7 @@ public class ProductService {
                 .unit(request.getUnit())
                 .price(request.getPrice())
                 .status(request.getStatus())
+                .barcode(barcodeBytes)
                 .build());
 
         return mapToResponse(product);
@@ -127,6 +147,11 @@ public class ProductService {
     }
 
     private ProductResponse mapToResponse(Product product) {
+        String barcodeBase64 = null;
+        if (product.getBarcode() != null) {
+            barcodeBase64 = java.util.Base64.getEncoder().encodeToString(product.getBarcode());
+        }
+
         return ProductResponse.builder()
                 .id(product.getId())
                 .sku(product.getSku())
@@ -137,6 +162,7 @@ public class ProductService {
                 .unit(product.getUnit())
                 .price(product.getPrice())
                 .status(product.getStatus())
+                .barcode(barcodeBase64)
                 .build();
     }
 

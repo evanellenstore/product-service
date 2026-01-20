@@ -16,4 +16,5 @@ public class ProductResponse {
     private String unit;
     private Double price;
     private String status;
+    private String barcode; // Base64 PNG string, optional
 }

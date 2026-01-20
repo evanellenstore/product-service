@@ -6,6 +6,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.io.ByteArrayOutputStream;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+
+import com.google.zxing.BarcodeFormat;
+import com.google.zxing.MultiFormatWriter;
+import com.google.zxing.common.BitMatrix;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
 
 @RestController
 @RequestMapping("/products")
@@ -19,6 +27,7 @@ public class ProductController {
      */
     @PostMapping
     public ProductResponse create(@RequestBody ProductRequest request) {
+
         return productService.create(request);
     }
 
@@ -121,5 +130,20 @@ public class ProductController {
     public List<CategoryResponse> getAllCategories() {
         return productService.getAllCategories();
     }
+
+        /**
+         * Generate a Code128 barcode PNG for a given SKU.
+         */
+        @GetMapping(value = "/sku/{sku}/barcode", produces = MediaType.IMAGE_PNG_VALUE)
+        public ResponseEntity<byte[]> barcodeForSku(@PathVariable String sku) throws Exception {
+            int width = 400;
+            int height = 100;
+
+            BitMatrix bitMatrix = new MultiFormatWriter().encode(sku, BarcodeFormat.CODE_128, width, height);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", baos);
+            byte[] img = baos.toByteArray();
+            return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).body(img);
+        }
 
 }
