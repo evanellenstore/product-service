@@ -1,9 +1,9 @@
 package com.store.product.service;
-
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.List;
-
+import java.util.Locale;
 import org.springframework.stereotype.Service;
-
 import com.store.product.dto.CategoryRequest;
 import com.store.product.dto.CategoryResponse;
 import com.store.product.dto.ProductRequest;
@@ -13,7 +13,6 @@ import com.store.product.entity.Product;
 import com.store.product.exception.ProductException;
 import com.store.product.repository.CategoryRepository;
 import com.store.product.repository.ProductRepository;
-
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -24,15 +23,22 @@ public class ProductService {
 
     private final CategoryRepository categoryRepository;;
 
-    
+
 
     public ProductResponse create(ProductRequest request) {
-        if (productRepository.existsBySku(request.getSku())) {
+
+        String sku = generateSku(
+                request.getBrand(),
+                request.getCategory(),
+                request.getName(),
+                request.getUnit());
+
+        if (productRepository.existsBySku(sku)) {
             throw new ProductException("Product SKU already exists");
         }
 
         Product product = productRepository.save(Product.builder()
-                .sku(request.getSku())
+                .sku(sku)
                 .name(request.getName())
                 .description(request.getDescription())
                 .category(request.getCategory())
@@ -58,13 +64,29 @@ public class ProductService {
         return mapToResponse(product);
     }
 
-    public ProductResponse getByName(String name) {
-        Product product = productRepository.findByName(name)
-                .orElseThrow(() -> new ProductException("Product not found"));
-        return mapToResponse(product);
+    public List<ProductResponse> getByName(String name) {
+        List<Product> products = productRepository.fetchByName(name);
+        if (products.isEmpty()) {
+            throw new ProductException("Product not found");
+        }
+        return products.stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
-    
+
+
+    public List<ProductResponse> getAllSku(String sku) {
+
+        List<Product> products = productRepository.fetchBySku(sku);
+        if (products.isEmpty()) {
+            throw new ProductException("Product not found");
+        }
+        return products.stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
 
     public List<String> getByCategory(String category) {
         List<String> brands = productRepository.findByCategory(category);
@@ -131,4 +153,53 @@ public class ProductService {
                 .map(category -> new CategoryResponse(category.getId(), category.getName()))
                 .toList();
     }
+
+     public String generateSku(String brand, String category, String name, String unit) {
+
+        String base = String.join("|",
+                normalize(brand),
+                normalize(category),
+                normalize(name),
+                normalize(unit)
+        );
+
+        String hash = shortHash(base);
+
+        return String.format(
+                "%s-%s-%s-%s",
+                shortCode(brand),
+                shortCode(name),
+                unit.toUpperCase(Locale.ROOT),
+                hash
+        );
+    }
+
+    private String shortCode(String value) {
+        if (value == null) return "NA";
+        value = value.replaceAll("[^a-zA-Z0-9]", "");
+        return value.length() <= 6
+                ? value.toUpperCase()
+                : value.substring(0, 6).toUpperCase();
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
+    }
+
+     private String shortHash(String input) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] digest = md.digest(input.getBytes(StandardCharsets.UTF_8));
+
+            StringBuilder hex = new StringBuilder();
+            for (int i = 0; i < 3; i++) { // 6 hex chars
+                hex.append(String.format("%02X", digest[i]));
+            }
+            return hex.toString();
+        } catch (Exception e) {
+            throw new RuntimeException("SKU generation failed", e);
+        }
+    }
+
+
 }

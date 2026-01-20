@@ -15,12 +15,19 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT DISTINCT p.brand FROM Product p WHERE p.category = :category")
     List<String> findByCategory(String category);
 
-    @Query("SELECT DISTINCT p.name FROM Product p WHERE p.brand = :brand")
+    @Query("SELECT DISTINCT p.sku FROM Product p WHERE p.brand = :brand")
     List<String> findByBrand(String brand);
 
     @Query("SELECT DISTINCT p.category FROM Product p")
     List<String> getAllCategories();
 
     boolean existsBySku(String sku);
+
     Optional<Product> findByName(String name);
+
+    @Query("SELECT p FROM Product p WHERE p.name = :name")
+    List<Product> fetchByName(String name);
+
+    @Query("SELECT p FROM Product p WHERE p.sku = :sku")
+    List<Product> fetchBySku(String sku);
 }

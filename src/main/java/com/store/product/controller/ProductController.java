@@ -69,8 +69,13 @@ public class ProductController {
      * Get products by name.
      */
     @GetMapping("/search/name")
-    public ProductResponse getByName(@RequestParam String name) {
+    public List<ProductResponse> getByName(@RequestParam String name) {
         return productService.getByName(name);
+    }
+
+    @GetMapping("/search/sku")
+    public List<ProductResponse> getBySku(@RequestParam String sku) {
+        return productService.getAllSku(sku);
     }
 
     /**
