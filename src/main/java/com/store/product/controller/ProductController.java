@@ -83,7 +83,7 @@ public class ProductController {
     }
 
     @GetMapping("/search/sku")
-    public List<ProductResponse> getBySku(@RequestParam String sku) {
+    public ProductResponse getBySku(@RequestParam String sku) {
         return productService.getAllSku(sku);
     }
 

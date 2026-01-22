@@ -96,15 +96,13 @@ public class ProductService {
 
 
 
-    public List<ProductResponse> getAllSku(String sku) {
+    public ProductResponse getAllSku(String sku) {
 
-        List<Product> products = productRepository.fetchBySku(sku);
-        if (products.isEmpty()) {
+        Product product = productRepository.fetchBySku(sku);
+        if (product == null) {
             throw new ProductException("Product not found");
         }
-        return products.stream()
-                .map(this::mapToResponse)
-                .toList();
+        return mapToResponse(product);
     }
 
 

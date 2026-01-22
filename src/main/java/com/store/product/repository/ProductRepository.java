@@ -29,5 +29,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> fetchByName(String name);
 
     @Query("SELECT p FROM Product p WHERE p.sku = :sku")
-    List<Product> fetchBySku(String sku);
+    Product fetchBySku(String sku);
 }
