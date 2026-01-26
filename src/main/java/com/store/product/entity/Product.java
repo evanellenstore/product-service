@@ -38,6 +38,10 @@ public class Product {
     @Column(nullable = false)
     private String status; // ACTIVE / INACTIVE
 
+    @Lob
+    @Column(name = "barcode", columnDefinition = "LONGBLOB")
+    private byte[] barcode;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
