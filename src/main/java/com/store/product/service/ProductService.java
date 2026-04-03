@@ -74,6 +74,7 @@ public class ProductService {
                 .brandId(request.getBrandId())
                 .unit(request.getUnit())
                 .price(request.getPrice())
+                .discountAmount(request.getDiscountAmount())
                 .status(request.getStatus())
                 .barcode(barcodeBytes)
                 .build());
@@ -152,6 +153,7 @@ public class ProductService {
         product.setBrandId(request.getBrandId());
         product.setUnit(request.getUnit());
         product.setPrice(request.getPrice());
+        product.setDiscountAmount(request.getDiscountAmount());
         product.setStatus(request.getStatus());
 
         return mapToResponse(productRepository.save(product));
@@ -190,6 +192,7 @@ public class ProductService {
                 .brandName(brandName)
                 .unit(product.getUnit())
                 .price(product.getPrice())
+                .discountAmount(product.getDiscountAmount())
                 .status(product.getStatus())
                 .barcode(barcodeBase64)
                 .build();

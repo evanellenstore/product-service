@@ -36,6 +36,9 @@ public class Product {
 
     private Double price;
 
+    @Column(name = "discount_amount")
+    private Double discountAmount; // Discount in rupees
+
     @Column(nullable = false)
     private String status; // ACTIVE / INACTIVE
 

@@ -16,6 +16,7 @@ public class ProductResponse {
     private String brandName;
     private String unit;
     private Double price;
+    private Double discountAmount;
     private String status;
     private String barcode; // Base64 PNG string, optional
 }
