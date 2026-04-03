@@ -6,12 +6,12 @@ import java.util.Locale;
 import org.springframework.stereotype.Service;
 import com.store.product.dto.CategoryRequest;
 import com.store.product.dto.CategoryResponse;
+import com.store.product.dto.BrandRequest;
+import com.store.product.dto.BrandResponse;
 import com.store.product.dto.ProductRequest;
 import com.store.product.dto.ProductResponse;
-import com.store.product.entity.Category;
 import com.store.product.entity.Product;
 import com.store.product.exception.ProductException;
-import com.store.product.repository.CategoryRepository;
 import com.store.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import com.google.zxing.BarcodeFormat;
@@ -25,8 +25,8 @@ import java.io.ByteArrayOutputStream;
 public class ProductService {
 
     private final ProductRepository productRepository;
-
-    private final CategoryRepository categoryRepository;;
+    private final CategoryService categoryService;
+    private final BrandService brandService;
 
 
 
@@ -165,17 +165,47 @@ public class ProductService {
     }
 
     public CategoryResponse createCategory(CategoryRequest request) {
-        Category category = categoryRepository.save(Category.builder()
-                .name(request.getCategory())
-                .build());
-        return new CategoryResponse(category.getId(), category.getName());
+        return categoryService.create(request);
     }
 
     public List<CategoryResponse> getAllCategories() {
-        return categoryRepository.findAll()
-                .stream()
-                .map(category -> new CategoryResponse(category.getId(), category.getName()))
-                .toList();
+        return categoryService.getAll();
+    }
+
+    public List<CategoryResponse> getActiveCategories() {
+        return categoryService.getActive();
+    }
+
+    public CategoryResponse toggleCategoryStatus(Long categoryId) {
+        return categoryService.toggleActive(categoryId);
+    }
+
+    public CategoryResponse updateCategoryStatus(Long categoryId, Boolean isActive) {
+        return categoryService.updateStatus(categoryId, isActive);
+    }
+
+    public BrandResponse createBrand(BrandRequest request) {
+        return brandService.create(request);
+    }
+
+    public List<BrandResponse> getAllBrands() {
+        return brandService.getAll();
+    }
+
+    public BrandResponse updateBrand(Long brandId, BrandRequest request) {
+        return brandService.update(brandId, request);
+    }
+
+    public BrandResponse toggleBrandStatus(Long brandId) {
+        return brandService.toggleActive(brandId);
+    }
+
+    public void deleteBrand(Long brandId) {
+        brandService.delete(brandId);
+    }
+
+    public List<String> getBrandsByCategory(String category) {
+        return productRepository.findByCategory(category);
     }
 
      public String generateSku(String brand, String category, String name, String unit) {

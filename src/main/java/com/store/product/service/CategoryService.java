@@ -23,17 +23,49 @@ public class CategoryService {
 
         Category category = Category.builder()
                 .name(request.getCategory())
+                .isActive(true)
                 .build();
 
         categoryRepository.save(category);
 
-        return new CategoryResponse(category.getId(), category.getName());
+        return new CategoryResponse(category.getId(), category.getName(), category.getIsActive());
     }
 
+    // Get only active categories (for inventory dropdown)
+    public List<CategoryResponse> getActive() {
+        return categoryRepository.findByIsActiveTrue()
+                .stream()
+                .map(c -> new CategoryResponse(c.getId(), c.getName(), c.getIsActive()))
+                .toList();
+    }
+
+    // Get all categories (for admin - including inactive)
     public List<CategoryResponse> getAll() {
         return categoryRepository.findAll()
                 .stream()
-                .map(c -> new CategoryResponse(c.getId(), c.getName()))
+                .map(c -> new CategoryResponse(c.getId(), c.getName(), c.getIsActive()))
                 .toList();
+    }
+
+    // Toggle category active status (for admin)
+    public CategoryResponse toggleActive(Long categoryId) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        category.setIsActive(!category.getIsActive());
+        categoryRepository.save(category);
+
+        return new CategoryResponse(category.getId(), category.getName(), category.getIsActive());
+    }
+
+    // Update category active status
+    public CategoryResponse updateStatus(Long categoryId, Boolean isActive) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        category.setIsActive(isActive);
+        categoryRepository.save(category);
+
+        return new CategoryResponse(category.getId(), category.getName(), category.getIsActive());
     }
 }

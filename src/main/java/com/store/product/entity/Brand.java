@@ -5,7 +5,7 @@ import lombok.*;
 
 @Entity
 @Table(
-    name = "product_category",
+    name = "product_brand",
     uniqueConstraints = @UniqueConstraint(columnNames = "name")
 )
 @Getter
@@ -13,7 +13,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Category {
+public class Brand {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
