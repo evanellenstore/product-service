@@ -67,11 +67,11 @@ public class ProductController {
     }
 
     /**
-     * Get products by brand.
+     * Get products by brand ID.
      */
     @GetMapping("/search/brand")
-    public List<String> getByBrand(@RequestParam String brand) {
-        return productService.getByBrand(brand);
+    public List<String> getByBrand(@RequestParam Long brandId) {
+        return productService.getByBrand(brandId);
     }
 
     /**
@@ -169,6 +169,14 @@ public class ProductController {
     @GetMapping("/brands")
     public List<BrandResponse> getAllBrands() {
         return productService.getAllBrands();
+    }
+
+    /**
+     * Get only active product brands (for dropdowns).
+     */
+    @GetMapping("/brands/active")
+    public List<BrandResponse> getActiveBrands() {
+        return productService.getActiveBrands();
     }
 
     /**

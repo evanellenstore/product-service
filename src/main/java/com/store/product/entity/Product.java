@@ -29,7 +29,8 @@ public class Product {
 
     private String category;
 
-    private String brand;
+    @Column(name = "brand_id")
+    private Long brandId;
 
     private String unit;   // PCS / KG / LTR
 

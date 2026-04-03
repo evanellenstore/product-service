@@ -47,6 +47,13 @@ public class BrandService {
                 .toList();
     }
 
+    // Get brand by ID
+    public BrandResponse getById(Long brandId) {
+        Brand brand = brandRepository.findById(brandId)
+                .orElseThrow(() -> new RuntimeException("Brand not found"));
+        return new BrandResponse(brand.getId(), brand.getName(), brand.getIsActive());
+    }
+
     // Toggle brand active status (for admin)
     public BrandResponse toggleActive(Long brandId) {
         Brand brand = brandRepository.findById(brandId)

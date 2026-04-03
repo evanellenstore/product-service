@@ -32,8 +32,18 @@ public class ProductService {
 
     public ProductResponse create(ProductRequest request) {
 
+        // Get brand name from brand ID
+        String brandName = null;
+        if (request.getBrandId() != null) {
+            try {
+                brandName = brandService.getById(request.getBrandId()).getBrand();
+            } catch (Exception e) {
+                throw new ProductException("Invalid brand ID");
+            }
+        }
+
         String sku = generateSku(
-                request.getBrand(),
+                brandName,
                 request.getCategory(),
                 request.getName(),
                 request.getUnit());
@@ -61,7 +71,7 @@ public class ProductService {
                 .name(request.getName())
                 .description(request.getDescription())
                 .category(request.getCategory())
-                .brand(request.getBrand())
+                .brandId(request.getBrandId())
                 .unit(request.getUnit())
                 .price(request.getPrice())
                 .status(request.getStatus())
@@ -107,19 +117,29 @@ public class ProductService {
 
 
     public List<String> getByCategory(String category) {
-        List<String> brands = productRepository.findByCategory(category);
-        if (brands.isEmpty()) {
+        List<Long> brandIds = productRepository.findByCategory(category);
+        if (brandIds.isEmpty()) {
             throw new ProductException("No products found");
         }
-        return brands;
+        // Convert brand IDs to brand names
+        return brandIds.stream()
+                .map(id -> {
+                    try {
+                        return brandService.getById(id).getBrand();
+                    } catch (Exception e) {
+                        return null;
+                    }
+                })
+                .filter(name -> name != null)
+                .toList();
     }
 
-    public List<String> getByBrand(String brand) {
-        List<String> names = productRepository.findByBrand(brand);
-        if (names.isEmpty()) {
-            throw new ProductException("No products found");
+    public List<String> getByBrand(Long brandId) {
+        List<String> skus = productRepository.findByBrand(brandId);
+        if (skus.isEmpty()) {
+            throw new ProductException("No products found for this brand");
         }
-        return names;
+        return skus;
     }
 
     public ProductResponse update(Long id, ProductRequest request) {
@@ -129,7 +149,7 @@ public class ProductService {
         product.setName(request.getName());
         product.setDescription(request.getDescription());
         product.setCategory(request.getCategory());
-        product.setBrand(request.getBrand());
+        product.setBrandId(request.getBrandId());
         product.setUnit(request.getUnit());
         product.setPrice(request.getPrice());
         product.setStatus(request.getStatus());
@@ -150,13 +170,24 @@ public class ProductService {
             barcodeBase64 = java.util.Base64.getEncoder().encodeToString(product.getBarcode());
         }
 
+        // Fetch brand name based on brand ID
+        String brandName = null;
+        if (product.getBrandId() != null) {
+            try {
+                brandName = brandService.getById(product.getBrandId()).getBrand();
+            } catch (Exception e) {
+                brandName = "Unknown";
+            }
+        }
+
         return ProductResponse.builder()
                 .id(product.getId())
                 .sku(product.getSku())
                 .name(product.getName())
                 .description(product.getDescription())
                 .category(product.getCategory())
-                .brand(product.getBrand())
+                .brandId(product.getBrandId())
+                .brandName(brandName)
                 .unit(product.getUnit())
                 .price(product.getPrice())
                 .status(product.getStatus())
@@ -192,6 +223,10 @@ public class ProductService {
         return brandService.getAll();
     }
 
+    public List<BrandResponse> getActiveBrands() {
+        return brandService.getActive();
+    }
+
     public BrandResponse updateBrand(Long brandId, BrandRequest request) {
         return brandService.update(brandId, request);
     }
@@ -205,7 +240,18 @@ public class ProductService {
     }
 
     public List<String> getBrandsByCategory(String category) {
-        return productRepository.findByCategory(category);
+        List<Long> brandIds = productRepository.findByCategory(category);
+        // Convert brand IDs to brand names
+        return brandIds.stream()
+                .map(id -> {
+                    try {
+                        return brandService.getById(id).getBrand();
+                    } catch (Exception e) {
+                        return null;
+                    }
+                })
+                .filter(name -> name != null)
+                .toList();
     }
 
      public String generateSku(String brand, String category, String name, String unit) {

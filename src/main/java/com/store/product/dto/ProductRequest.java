@@ -9,7 +9,7 @@ public class ProductRequest {
     private String name;
     private String description;
     private String category;
-    private String brand;
+    private Long brandId;
     private String unit;
     private Double price;
     private String status;
