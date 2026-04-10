@@ -9,6 +9,7 @@ public class ProductResponse {
 
     private Long id;
     private String sku;
+    private String externalBarcode;
     private String name;
     private String description;
     private String category;

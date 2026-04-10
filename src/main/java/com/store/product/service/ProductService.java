@@ -52,6 +52,13 @@ public class ProductService {
             throw new ProductException("Product SKU already exists");
         }
 
+        // Check if external barcode already exists (if provided)
+        if (request.getExternalBarcode() != null && !request.getExternalBarcode().isEmpty()) {
+            if (productRepository.existsByExternalBarcode(request.getExternalBarcode())) {
+                throw new ProductException("External barcode already exists");
+            }
+        }
+
         // generate barcode PNG for SKU
         byte[] barcodeBytes = null;
         try {
@@ -68,6 +75,7 @@ public class ProductService {
 
         Product product = productRepository.save(Product.builder()
                 .sku(sku)
+                .externalBarcode(request.getExternalBarcode())
                 .name(request.getName())
                 .description(request.getDescription())
                 .category(request.getCategory())
@@ -116,6 +124,30 @@ public class ProductService {
         return mapToResponse(product);
     }
 
+    /**
+     * Search product by barcode (either SKU or external barcode)
+     * This method works for both SKU scanning and external barcode scanning
+     */
+    public ProductResponse searchByBarcode(String barcode) {
+        if (barcode == null || barcode.isEmpty()) {
+            throw new ProductException("Barcode cannot be empty");
+        }
+
+        // First try to find by external barcode
+        var productByExternalBarcode = productRepository.findByExternalBarcode(barcode);
+        if (productByExternalBarcode.isPresent()) {
+            return mapToResponse(productByExternalBarcode.get());
+        }
+
+        // If not found, try to find by SKU
+        Product product = productRepository.fetchBySku(barcode);
+        if (product != null) {
+            return mapToResponse(product);
+        }
+
+        throw new ProductException("Product not found for barcode: " + barcode);
+    }
+
 
     public List<String> getByCategory(String category) {
         List<Long> brandIds = productRepository.findByCategory(category);
@@ -146,6 +178,16 @@ public class ProductService {
     public ProductResponse update(Long id, ProductRequest request) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductException("Product not found"));
+
+        // Check if external barcode is being updated and if it already exists elsewhere
+        if (request.getExternalBarcode() != null && !request.getExternalBarcode().isEmpty()) {
+            String currentBarcode = product.getExternalBarcode();
+            if (!request.getExternalBarcode().equals(currentBarcode) && 
+                productRepository.existsByExternalBarcode(request.getExternalBarcode())) {
+                throw new ProductException("External barcode already exists");
+            }
+            product.setExternalBarcode(request.getExternalBarcode());
+        }
 
         product.setName(request.getName());
         product.setDescription(request.getDescription());
@@ -185,6 +227,7 @@ public class ProductService {
         return ProductResponse.builder()
                 .id(product.getId())
                 .sku(product.getSku())
+                .externalBarcode(product.getExternalBarcode())
                 .name(product.getName())
                 .description(product.getDescription())
                 .category(product.getCategory())

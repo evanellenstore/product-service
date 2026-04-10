@@ -14,5 +14,5 @@ public class ProductRequest {
     private Double price;
     private Double discountAmount;
     private String status;
-    // barcode size is fixed on server (no client-specified sizing)
+    private String externalBarcode; // External barcode number (can be scanned)
 }

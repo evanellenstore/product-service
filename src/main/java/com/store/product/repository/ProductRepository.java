@@ -12,6 +12,12 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Optional<Product> findBySku(String sku);
 
+    Optional<Product> findByExternalBarcode(String externalBarcode);
+
+    boolean existsBySku(String sku);
+
+    boolean existsByExternalBarcode(String externalBarcode);
+
     @Query("SELECT DISTINCT p.brandId FROM Product p WHERE p.category = :category")
     List<Long> findByCategory(String category);
 
@@ -20,8 +26,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT DISTINCT p.category FROM Product p")
     List<String> getAllCategories();
-
-    boolean existsBySku(String sku);
 
     Optional<Product> findByName(String name);
 

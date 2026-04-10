@@ -88,6 +88,15 @@ public class ProductController {
     }
 
     /**
+     * Search product by barcode (either SKU or external barcode).
+     * This endpoint works for both SKU scanning and external barcode scanning.
+     */
+    @GetMapping("/search/barcode")
+    public ProductResponse searchByBarcode(@RequestParam String barcode) {
+        return productService.searchByBarcode(barcode);
+    }
+
+    /**
      * Update a product.
      */
     @PutMapping("/{id}")

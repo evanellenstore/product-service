@@ -8,7 +8,10 @@ import java.time.LocalDateTime;
 @Entity
 @Table(
     name = "product",
-    uniqueConstraints = @UniqueConstraint(columnNames = "sku")
+    uniqueConstraints = {
+        @UniqueConstraint(columnNames = "sku"),
+        @UniqueConstraint(columnNames = "external_barcode")
+    }
 )
 @Getter @Setter
 @NoArgsConstructor @AllArgsConstructor
@@ -21,6 +24,9 @@ public class Product {
 
     @Column(nullable = false, unique = true)
     private String sku;
+
+    @Column(name = "external_barcode", unique = true)
+    private String externalBarcode;
 
     @Column(nullable = false)
     private String name;
