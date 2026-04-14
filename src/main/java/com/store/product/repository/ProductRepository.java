@@ -34,4 +34,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     @Query("SELECT p FROM Product p WHERE p.sku = :sku")
     Product fetchBySku(String sku);
+
+    // Find all products by status
+    @Query("SELECT p FROM Product p WHERE p.status = :status")
+    List<Product> findByStatus(String status);
 }

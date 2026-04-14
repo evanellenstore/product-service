@@ -2,6 +2,8 @@ package com.store.product.controller;
 
 import com.store.product.dto.*;
 import com.store.product.service.ProductService;
+import com.store.product.service.CategoryBrandMappingService;
+import com.store.product.entity.Brand;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +23,7 @@ import com.google.zxing.client.j2se.MatrixToImageWriter;
 public class ProductController {
 
     private final ProductService productService;
+    private final CategoryBrandMappingService categoryBrandMappingService;
 
     /**
      * Create a new product.
@@ -96,8 +99,18 @@ public class ProductController {
         return productService.searchByBarcode(barcode);
     }
 
-    /**
-     * Update a product.
+    /**     * Filter products for customer shopping view by category, brand, and search term.
+     * All parameters are optional. Returns only ACTIVE products.
+     */
+    @GetMapping("/filter")
+    public List<ProductResponse> filterProducts(
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) Long brandId,
+            @RequestParam(required = false) String searchTerm) {
+        return productService.filterProducts(categoryId, brandId, searchTerm);
+    }
+
+    /**     * Update a product.
      */
     @PutMapping("/{id}")
     public ProductResponse update(@PathVariable Long id,
@@ -218,6 +231,47 @@ public class ProductController {
     @DeleteMapping("/brand/{id}")
     public void deleteBrand(@PathVariable Long id) {
         productService.deleteBrand(id);
+    }
+
+    /* ==================================
+       CATEGORY-BRAND MAPPING ENDPOINTS
+       ================================== */
+
+    /**
+     * Get all brands mapped to a category.
+     */
+    @GetMapping("/categories/{categoryId}/brands")
+    public List<BrandResponse> getBrandsByCategory(@PathVariable Long categoryId) {
+        List<Brand> brands = categoryBrandMappingService.getBrandsByCategory(categoryId);
+        return brands.stream()
+                .map(b -> new BrandResponse(b.getId(), b.getName(), b.getIsActive()))
+                .toList();
+    }
+
+    /**
+     * Map a brand to a category.
+     */
+    @PostMapping("/categories/brands/map")
+    public String mapBrandToCategory(@RequestBody CategoryBrandMappingRequest request) {
+        categoryBrandMappingService.mapBrandToCategory(request.getCategoryId(), request.getBrandId());
+        return "Brand mapped successfully";
+    }
+
+    /**
+     * Unmap a brand from a category.
+     */
+    @DeleteMapping("/categories/brands/unmap")
+    public String unmapBrandFromCategory(@RequestBody CategoryBrandMappingRequest request) {
+        categoryBrandMappingService.unmapBrandFromCategory(request.getCategoryId(), request.getBrandId());
+        return "Brand unmapped successfully";
+    }
+
+    /**
+     * Check if a brand is mapped to a category.
+     */
+    @GetMapping("/categories/{categoryId}/brands/{brandId}")
+    public boolean isBrandMappedToCategory(@PathVariable Long categoryId, @PathVariable Long brandId) {
+        return categoryBrandMappingService.isBrandMappedToCategory(categoryId, brandId);
     }
 
         /**

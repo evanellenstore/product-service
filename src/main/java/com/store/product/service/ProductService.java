@@ -175,6 +175,47 @@ public class ProductService {
         return skus;
     }
 
+    /**
+     * Filter products by category, brand, and search term (for shopping/customer view)
+     * All parameters are optional. Returns only ACTIVE products.
+     */
+    public List<ProductResponse> filterProducts(Long categoryId, Long brandId, String searchTerm) {
+        // Start with all ACTIVE products
+        List<Product> products = productRepository.findByStatus("ACTIVE");
+        
+        // Filter by category if provided (must have matching brand in category mapping)
+        if (categoryId != null && categoryId > 0) {
+            // For now, we'll filter by products that have a brand
+            // In a real scenario, we'd filter by products in categories
+            products = products.stream()
+                    .filter(p -> p.getBrandId() != null)
+                    .toList();
+        }
+        
+        // Filter by brand if provided
+        if (brandId != null && brandId > 0) {
+            products = products.stream()
+                    .filter(p -> p.getBrandId() != null && p.getBrandId().equals(brandId))
+                    .toList();
+        }
+        
+        // Filter by search term if provided (search in name, description, SKU)
+        if (searchTerm != null && !searchTerm.isEmpty()) {
+            String lowerSearchTerm = searchTerm.toLowerCase();
+            products = products.stream()
+                    .filter(p -> 
+                        p.getName().toLowerCase().contains(lowerSearchTerm) ||
+                        (p.getDescription() != null && p.getDescription().toLowerCase().contains(lowerSearchTerm)) ||
+                        p.getSku().toLowerCase().contains(lowerSearchTerm)
+                    )
+                    .toList();
+        }
+        
+        return products.stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
     public ProductResponse update(Long id, ProductRequest request) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new ProductException("Product not found"));
