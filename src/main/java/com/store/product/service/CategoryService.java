@@ -68,4 +68,21 @@ public class CategoryService {
 
         return new CategoryResponse(category.getId(), category.getName(), category.getIsActive());
     }
+
+    // Update category name/properties
+    public CategoryResponse update(Long categoryId, CategoryRequest request) {
+        Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        // Check if new name already exists (excluding current category)
+        if (!category.getName().equalsIgnoreCase(request.getCategory()) &&
+            categoryRepository.existsByNameIgnoreCase(request.getCategory())) {
+            throw new RuntimeException("Category with this name already exists");
+        }
+
+        category.setName(request.getCategory());
+        categoryRepository.save(category);
+
+        return new CategoryResponse(category.getId(), category.getName(), category.getIsActive());
+    }
 }

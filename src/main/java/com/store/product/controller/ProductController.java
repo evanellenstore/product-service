@@ -178,6 +178,14 @@ public class ProductController {
     }
 
     /**
+     * Update category (name/properties).
+     */
+    @PutMapping("/categories/{id}")
+    public CategoryResponse updateCategory(@PathVariable Long id, @RequestBody CategoryRequest request) {
+        return productService.updateCategory(id, request);
+    }
+
+    /**
      * Create a new product brand.
      */
     @PostMapping("/brand")

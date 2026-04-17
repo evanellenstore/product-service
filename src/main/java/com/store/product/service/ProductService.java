@@ -302,6 +302,10 @@ public class ProductService {
         return categoryService.updateStatus(categoryId, isActive);
     }
 
+    public CategoryResponse updateCategory(Long categoryId, CategoryRequest request) {
+        return categoryService.update(categoryId, request);
+    }
+
     public BrandResponse createBrand(BrandRequest request) {
         return brandService.create(request);
     }
