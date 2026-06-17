@@ -104,10 +104,19 @@ public class ProductService {
     }
 
     public List<ProductResponse> getByName(String name) {
+        if (name == null || name.isBlank()) return List.of();
+
         List<Product> products = productRepository.fetchByName(name);
+
+        // If no direct matches, try a normalized search removing spaces/dashes
         if (products.isEmpty()) {
-            throw new ProductException("Product not found");
+            String norm = name.replaceAll("[\\s\\-–—_]", "").toLowerCase();
+            if (!norm.isBlank()) {
+                products = productRepository.fetchByNameNormalized(norm);
+            }
         }
+
+        // Return possibly-empty result list
         return products.stream()
                 .map(this::mapToResponse)
                 .toList();
