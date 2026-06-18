@@ -1,4 +1,5 @@
 package com.store.product.service;
+
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.List;
@@ -27,8 +28,6 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryService categoryService;
     private final BrandService brandService;
-
-
 
     public ProductResponse create(ProductRequest request) {
 
@@ -103,26 +102,61 @@ public class ProductService {
         return mapToResponse(product);
     }
 
-    public List<ProductResponse> getByName(String name) {
-        if (name == null || name.isBlank()) return List.of();
+    public List<ProductResponse> getByName(String name, String language) {
 
-        List<Product> products = productRepository.fetchByName(name);
+        if (name == null || name.isBlank()) {
+            return List.of();
+        }
 
-        // If no direct matches, try a normalized search removing spaces/dashes
-        if (products.isEmpty()) {
-            String norm = name.replaceAll("[\\s\\-–—_]", "").toLowerCase();
-            if (!norm.isBlank()) {
-                products = productRepository.fetchByNameNormalized(norm);
+        String searchName = name.split("-")[0].trim();
+        List<Product> products = List.of();
+
+        if ("en".equalsIgnoreCase(language)) {
+
+            products = productRepository.fetchByName(searchName);
+
+            // Fallback normalized English search
+            if (products.isEmpty()) {
+                String norm = searchName.replaceAll("[\\s\\-–—_]", "")
+                        .toLowerCase();
+
+                if (!norm.isBlank()) {
+                    products = productRepository.fetchByNameNormalized(norm);
+                }
+            }
+
+        } else if ("hi".equalsIgnoreCase(language)) {
+
+            products = productRepository.fetchByHindiName(searchName);
+
+            // Fallback normalized Hindi search
+            if (products.isEmpty()) {
+                String norm = searchName.replaceAll("[\\s\\-–—_]", "");
+
+                if (!norm.isBlank()) {
+                    products = productRepository.fetchByHindiNameNormalized(norm);
+                }
+            }
+
+        } else {
+
+            // Search both English and Hindi
+            products = productRepository.fetchByNameOrHindiName(searchName);
+
+            if (products.isEmpty()) {
+                String norm = searchName.replaceAll("[\\s\\-–—_]", "")
+                        .toLowerCase();
+
+                if (!norm.isBlank()) {
+                    products = productRepository.fetchByNameOrHindiNameNormalized(norm);
+                }
             }
         }
 
-        // Return possibly-empty result list
         return products.stream()
                 .map(this::mapToResponse)
                 .toList();
     }
-
-
 
     public ProductResponse getAllSku(String sku) {
 
@@ -157,7 +191,6 @@ public class ProductService {
         throw new ProductException("Product not found for barcode: " + barcode);
     }
 
-
     public List<String> getByCategory(String category) {
         List<Long> brandIds = productRepository.findByCategory(category);
         if (brandIds.isEmpty()) {
@@ -185,13 +218,14 @@ public class ProductService {
     }
 
     /**
-     * Filter products by category, brand, and search term (for shopping/customer view)
+     * Filter products by category, brand, and search term (for shopping/customer
+     * view)
      * All parameters are optional. Returns only ACTIVE products.
      */
     public List<ProductResponse> filterProducts(Long categoryId, Long brandId, String searchTerm) {
         // Start with all ACTIVE products
         List<Product> products = productRepository.findByStatus("ACTIVE");
-        
+
         // Filter by category if provided (must have matching brand in category mapping)
         if (categoryId != null && categoryId > 0) {
             // For now, we'll filter by products that have a brand
@@ -200,26 +234,25 @@ public class ProductService {
                     .filter(p -> p.getBrandId() != null)
                     .toList();
         }
-        
+
         // Filter by brand if provided
         if (brandId != null && brandId > 0) {
             products = products.stream()
                     .filter(p -> p.getBrandId() != null && p.getBrandId().equals(brandId))
                     .toList();
         }
-        
+
         // Filter by search term if provided (search in name, description, SKU)
         if (searchTerm != null && !searchTerm.isEmpty()) {
             String lowerSearchTerm = searchTerm.toLowerCase();
             products = products.stream()
-                    .filter(p -> 
-                        p.getName().toLowerCase().contains(lowerSearchTerm) ||
-                        (p.getDescription() != null && p.getDescription().toLowerCase().contains(lowerSearchTerm)) ||
-                        p.getSku().toLowerCase().contains(lowerSearchTerm)
-                    )
+                    .filter(p -> p.getName().toLowerCase().contains(lowerSearchTerm) ||
+                            (p.getDescription() != null && p.getDescription().toLowerCase().contains(lowerSearchTerm))
+                            ||
+                            p.getSku().toLowerCase().contains(lowerSearchTerm))
                     .toList();
         }
-        
+
         return products.stream()
                 .map(this::mapToResponse)
                 .toList();
@@ -232,8 +265,8 @@ public class ProductService {
         // Check if external barcode is being updated and if it already exists elsewhere
         if (request.getExternalBarcode() != null && !request.getExternalBarcode().isEmpty()) {
             String currentBarcode = product.getExternalBarcode();
-            if (!request.getExternalBarcode().equals(currentBarcode) && 
-                productRepository.existsByExternalBarcode(request.getExternalBarcode())) {
+            if (!request.getExternalBarcode().equals(currentBarcode) &&
+                    productRepository.existsByExternalBarcode(request.getExternalBarcode())) {
                 throw new ProductException("External barcode already exists");
             }
             product.setExternalBarcode(request.getExternalBarcode());
@@ -354,14 +387,13 @@ public class ProductService {
                 .toList();
     }
 
-     public String generateSku(String brand, String category, String name, String unit) {
+    public String generateSku(String brand, String category, String name, String unit) {
 
         String base = String.join("|",
                 normalize(brand),
                 normalize(category),
                 normalize(name),
-                normalize(unit)
-        );
+                normalize(unit));
 
         String hash = shortHash(base);
 
@@ -370,12 +402,12 @@ public class ProductService {
                 shortCode(brand),
                 shortCode(name),
                 unit.toUpperCase(Locale.ROOT),
-                hash
-        );
+                hash);
     }
 
     private String shortCode(String value) {
-        if (value == null) return "NA";
+        if (value == null)
+            return "NA";
         value = value.replaceAll("[^a-zA-Z0-9]", "");
         return value.length() <= 6
                 ? value.toUpperCase()
@@ -386,7 +418,7 @@ public class ProductService {
         return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
     }
 
-     private String shortHash(String input) {
+    private String shortHash(String input) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
             byte[] digest = md.digest(input.getBytes(StandardCharsets.UTF_8));
@@ -400,6 +432,5 @@ public class ProductService {
             throw new RuntimeException("SKU generation failed", e);
         }
     }
-
 
 }

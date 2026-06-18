@@ -29,11 +29,43 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Optional<Product> findByName(String name);
 
+    //========================================================================================================
     @Query("SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))")
     List<Product> fetchByName(String name);
 
     @Query(value = "SELECT * FROM product p WHERE LOWER(REPLACE(REPLACE(REPLACE(REPLACE(p.name, ' ', ''), '-', ''), '–', ''), '—', '')) LIKE LOWER(CONCAT('%', :norm, '%'))", nativeQuery = true)
     List<Product> fetchByNameNormalized(String norm);
+
+    //========================================================================================================
+    @Query(value = " SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))")
+    List<Product> fetchByHindiName(String name);
+
+    @Query("""
+       SELECT p
+       FROM Product p
+       WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))
+          OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))
+       """)
+    List<Product> fetchByNameOrHindiName(String name);
+
+    @Query(value = """
+       SELECT *
+       FROM product p
+       WHERE REPLACE(REPLACE(REPLACE(REPLACE(p.name,' ',''),'-',''),'–',''),'—','')
+             LIKE CONCAT('%', :norm, '%')
+       """, nativeQuery = true)
+    List<Product> fetchByHindiNameNormalized(String norm);
+
+    @Query(value = """
+       SELECT *
+       FROM product p
+       WHERE LOWER(
+              REPLACE(REPLACE(REPLACE(REPLACE(p.name,' ',''),'-',''),'–',''),'—','')
+       ) LIKE LOWER(CONCAT('%', :norm, '%'))
+       OR REPLACE(REPLACE(REPLACE(REPLACE(p.name,' ',''),'-',''),'–',''),'—','')
+          LIKE CONCAT('%', :norm, '%')
+       """, nativeQuery = true)
+     List<Product> fetchByNameOrHindiNameNormalized(String norm);
 
     @Query("SELECT p FROM Product p WHERE p.sku = :sku")
     Product fetchBySku(String sku);
