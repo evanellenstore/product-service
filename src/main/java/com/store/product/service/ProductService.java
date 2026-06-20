@@ -45,7 +45,7 @@ public class ProductService {
                 brandName,
                 request.getCategory(),
                 request.getName(),
-                request.getUnit());
+                request.getUnit(),request.isLoose(),request.getPacketSize(),request.getPacketUnit());
 
         if (productRepository.existsBySku(sku)) {
             throw new ProductException("Product SKU already exists");
@@ -80,6 +80,9 @@ public class ProductService {
                 .category(request.getCategory())
                 .brandId(request.getBrandId())
                 .unit(request.getUnit())
+                .loose(request.isLoose())
+            .packetSize(request.getPacketSize())
+            .packetUnit(request.getPacketUnit())
                 .price(request.getPrice())
                 .discountAmount(request.getDiscountAmount())
                 .status(request.getStatus())
@@ -108,11 +111,11 @@ public class ProductService {
             return List.of();
         }
 
-        String searchName = name.split("-")[0].trim();
+        String[] searchNames = name.split("-");
         List<Product> products = List.of();
 
         if ("en".equalsIgnoreCase(language)) {
-
+            String searchName = searchNames[0].trim();
             products = productRepository.fetchByName(searchName);
 
             // Fallback normalized English search
@@ -126,6 +129,7 @@ public class ProductService {
             }
 
         } else if ("hi".equalsIgnoreCase(language)) {
+             String searchName = searchNames[1].trim();
 
             products = productRepository.fetchByHindiName(searchName);
 
@@ -141,6 +145,7 @@ public class ProductService {
         } else {
 
             // Search both English and Hindi
+            String searchName = name.trim();
             products = productRepository.fetchByNameOrHindiName(searchName);
 
             if (products.isEmpty()) {
@@ -277,6 +282,9 @@ public class ProductService {
         product.setCategory(request.getCategory());
         product.setBrandId(request.getBrandId());
         product.setUnit(request.getUnit());
+        product.setLoose(request.isLoose());
+        product.setPacketSize(request.getPacketSize());
+        product.setPacketUnit(request.getPacketUnit());
         product.setPrice(request.getPrice());
         product.setDiscountAmount(request.getDiscountAmount());
         product.setStatus(request.getStatus());
@@ -317,6 +325,9 @@ public class ProductService {
                 .brandId(product.getBrandId())
                 .brandName(brandName)
                 .unit(product.getUnit())
+                .loose(product.isLoose())
+                .packetSize(product.getPacketSize())
+                .packetUnit(product.getPacketUnit())
                 .price(product.getPrice())
                 .discountAmount(product.getDiscountAmount())
                 .status(product.getStatus())
@@ -387,13 +398,27 @@ public class ProductService {
                 .toList();
     }
 
-    public String generateSku(String brand, String category, String name, String unit) {
+    public String generateSku(String brand, String category, String name, String unit, boolean loose, Double packetSize, String packetUnit) {
 
+        String type = loose ? "L" : "P"; 
+       if(loose) {
+            type = "L";
+        } else if ( packetSize != null && packetUnit != null) {
+            unit = String.format("%s%s", packetSize, packetUnit);
+            type= "P";
+
+        }
+       
+       
+       
         String base = String.join("|",
                 normalize(brand),
                 normalize(category),
                 normalize(name),
-                normalize(unit));
+                normalize(unit),normalize(type));
+
+
+
 
         String hash = shortHash(base);
 

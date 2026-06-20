@@ -20,4 +20,7 @@ public class ProductResponse {
     private Double discountAmount;
     private String status;
     private String barcode; // Base64 PNG string, optional
+    private boolean loose;
+    private Double packetSize;
+    private String packetUnit;
 }

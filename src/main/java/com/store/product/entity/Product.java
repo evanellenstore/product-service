@@ -40,6 +40,15 @@ public class Product {
 
     private String unit;   // PCS / KG / LTR
 
+    @Column(name = "is_loose", nullable = false)
+    private boolean loose; // true = sold loose/bulk, false = packaged unit
+
+    @Column(name = "packet_size")
+    private Double packetSize; // numeric size of the packet (e.g., 5.0, 1.0, 500.0)
+
+    @Column(name = "packet_unit")
+    private String packetUnit; // unit of the packet contents (KG, G, LTR, ML)
+
     private Double price;
 
     @Column(name = "discount_amount")
@@ -64,5 +73,10 @@ public class Product {
     @PreUpdate
     void onUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+    @Transient
+    public String getContainedUnit() {
+        return packetUnit != null ? packetUnit : unit;
     }
 }
