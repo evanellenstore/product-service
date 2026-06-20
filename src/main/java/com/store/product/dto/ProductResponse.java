@@ -16,6 +16,7 @@ public class ProductResponse {
     private Long brandId;
     private String brandName;
     private String unit;
+    private Double productSize;
     private Double price;
     private Double discountAmount;
     private String status;

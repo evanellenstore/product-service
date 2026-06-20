@@ -16,6 +16,9 @@ public class ProductRequest {
     private String status;
     private String externalBarcode; // External barcode number (can be scanned)
     private boolean loose; // true = sold loose/bulk, false = packaged unit
+    private Double productSize; // numeric size when sold loose (e.g., per 100g)
     private Double packetSize; // numeric size of the packet
     private String packetUnit; // unit of the packet contents (KG, G, LTR, ML)
+
+    // Note: `unit` field represents the unit for productSize when sold loose
 }

@@ -42,10 +42,14 @@ public class ProductService {
         }
 
         String sku = generateSku(
-                brandName,
-                request.getCategory(),
-                request.getName(),
-                request.getUnit(),request.isLoose(),request.getPacketSize(),request.getPacketUnit());
+            brandName,
+            request.getCategory(),
+            request.getName(),
+            request.getUnit(),
+            request.isLoose(),
+            request.getProductSize(),
+            request.getPacketSize(),
+            request.getPacketUnit());
 
         if (productRepository.existsBySku(sku)) {
             throw new ProductException("Product SKU already exists");
@@ -81,6 +85,7 @@ public class ProductService {
                 .brandId(request.getBrandId())
                 .unit(request.getUnit())
                 .loose(request.isLoose())
+            .productSize(request.getProductSize())
             .packetSize(request.getPacketSize())
             .packetUnit(request.getPacketUnit())
                 .price(request.getPrice())
@@ -283,6 +288,7 @@ public class ProductService {
         product.setBrandId(request.getBrandId());
         product.setUnit(request.getUnit());
         product.setLoose(request.isLoose());
+        product.setProductSize(request.getProductSize());
         product.setPacketSize(request.getPacketSize());
         product.setPacketUnit(request.getPacketUnit());
         product.setPrice(request.getPrice());
@@ -325,6 +331,7 @@ public class ProductService {
                 .brandId(product.getBrandId())
                 .brandName(brandName)
                 .unit(product.getUnit())
+                .productSize(product.getProductSize())
                 .loose(product.isLoose())
                 .packetSize(product.getPacketSize())
                 .packetUnit(product.getPacketUnit())
@@ -398,10 +405,14 @@ public class ProductService {
                 .toList();
     }
 
-    public String generateSku(String brand, String category, String name, String unit, boolean loose, Double packetSize, String packetUnit) {
+    public String generateSku(String brand, String category, String name, String unit, boolean loose, Double productSize, Double packetSize, String packetUnit) {
 
-        String type = loose ? "L" : "P"; 
+        String type = "";
        if(loose) {
+            // when sold loose, include productSize and unit in SKU unit string if available
+            if (productSize != null && unit != null) {
+                unit = String.format("%s%s", productSize, unit);
+            }
             type = "L";
         } else if ( packetSize != null && packetUnit != null) {
             unit = String.format("%s%s", packetSize, packetUnit);
@@ -415,18 +426,17 @@ public class ProductService {
                 normalize(brand),
                 normalize(category),
                 normalize(name),
-                normalize(unit),normalize(type));
-
-
-
+                normalize(unit),
+                normalize(type));
 
         String hash = shortHash(base);
 
         return String.format(
-                "%s-%s-%s-%s",
+                "%s-%s-%s-%s-%s",
                 shortCode(brand),
                 shortCode(name),
                 unit.toUpperCase(Locale.ROOT),
+                shortCode(type),
                 hash);
     }
 

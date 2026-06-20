@@ -49,6 +49,9 @@ public class Product {
     @Column(name = "packet_unit")
     private String packetUnit; // unit of the packet contents (KG, G, LTR, ML)
 
+    @Column(name = "product_size")
+    private Double productSize; // numeric size when sold loose (e.g., 0.1 for 100g)
+
     private Double price;
 
     @Column(name = "discount_amount")
