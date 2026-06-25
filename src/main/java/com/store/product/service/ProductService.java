@@ -80,8 +80,10 @@ public class ProductService {
                 .sku(sku)
                 .externalBarcode(request.getExternalBarcode())
                 .name(request.getName())
+                .nameHi(request.getNameHi())
                 .description(request.getDescription())
                 .category(request.getCategory())
+                .categoryHi(request.getCategoryHi())
                 .brandId(request.getBrandId())
                 .unit(request.getUnit())
                 .loose(request.isLoose())
@@ -283,8 +285,10 @@ public class ProductService {
         }
 
         product.setName(request.getName());
+        product.setNameHi(request.getNameHi());
         product.setDescription(request.getDescription());
         product.setCategory(request.getCategory());
+        product.setCategoryHi(request.getCategoryHi());
         product.setBrandId(request.getBrandId());
         product.setUnit(request.getUnit());
         product.setLoose(request.isLoose());
@@ -326,10 +330,13 @@ public class ProductService {
                 .sku(product.getSku())
                 .externalBarcode(product.getExternalBarcode())
                 .name(product.getName())
+                .nameHi(product.getNameHi())
                 .description(product.getDescription())
                 .category(product.getCategory())
+                .categoryHi(product.getCategoryHi())
                 .brandId(product.getBrandId())
                 .brandName(brandName)
+                .brandNameHi(getBrandNameHi(product.getBrandId()))
                 .unit(product.getUnit())
                 .productSize(product.getProductSize())
                 .loose(product.isLoose())
@@ -340,6 +347,17 @@ public class ProductService {
                 .status(product.getStatus())
                 .barcode(barcodeBase64)
                 .build();
+    }
+
+    private String getBrandNameHi(Long brandId) {
+        if (brandId == null) {
+            return null;
+        }
+        try {
+            return brandService.getById(brandId).getNameHi();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     public CategoryResponse createCategory(CategoryRequest request) {

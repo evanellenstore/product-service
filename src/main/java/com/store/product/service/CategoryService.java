@@ -23,19 +23,20 @@ public class CategoryService {
 
         Category category = Category.builder()
                 .name(request.getCategory())
+                .nameHi(request.getCategoryHi())
                 .isActive(true)
                 .build();
 
         categoryRepository.save(category);
 
-        return new CategoryResponse(category.getId(), category.getName(), category.getIsActive());
+        return new CategoryResponse(category.getId(), category.getName(), category.getNameHi(), category.getIsActive());
     }
 
     // Get only active categories (for inventory dropdown)
     public List<CategoryResponse> getActive() {
         return categoryRepository.findByIsActiveTrue()
                 .stream()
-                .map(c -> new CategoryResponse(c.getId(), c.getName(), c.getIsActive()))
+                .map(c -> new CategoryResponse(c.getId(), c.getName(), c.getNameHi(), c.getIsActive()))
                 .toList();
     }
 
@@ -43,7 +44,7 @@ public class CategoryService {
     public List<CategoryResponse> getAll() {
         return categoryRepository.findAll()
                 .stream()
-                .map(c -> new CategoryResponse(c.getId(), c.getName(), c.getIsActive()))
+                .map(c -> new CategoryResponse(c.getId(), c.getName(), c.getNameHi(), c.getIsActive()))
                 .toList();
     }
 
@@ -55,7 +56,7 @@ public class CategoryService {
         category.setIsActive(!category.getIsActive());
         categoryRepository.save(category);
 
-        return new CategoryResponse(category.getId(), category.getName(), category.getIsActive());
+        return new CategoryResponse(category.getId(), category.getName(), category.getNameHi(), category.getIsActive());
     }
 
     // Update category active status
@@ -66,7 +67,7 @@ public class CategoryService {
         category.setIsActive(isActive);
         categoryRepository.save(category);
 
-        return new CategoryResponse(category.getId(), category.getName(), category.getIsActive());
+        return new CategoryResponse(category.getId(), category.getName(), category.getNameHi(), category.getIsActive());
     }
 
     // Update category name/properties
@@ -81,8 +82,11 @@ public class CategoryService {
         }
 
         category.setName(request.getCategory());
+        if (request.getCategoryHi() != null) {
+            category.setNameHi(request.getCategoryHi());
+        }
         categoryRepository.save(category);
 
-        return new CategoryResponse(category.getId(), category.getName(), category.getIsActive());
+        return new CategoryResponse(category.getId(), category.getName(), category.getNameHi(), category.getIsActive());
     }
 }

@@ -23,19 +23,20 @@ public class BrandService {
 
         Brand brand = Brand.builder()
                 .name(request.getBrand())
+                .nameHi(request.getNameHi())
                 .isActive(true)
                 .build();
 
         brandRepository.save(brand);
 
-        return new BrandResponse(brand.getId(), brand.getName(), brand.getIsActive());
+        return new BrandResponse(brand.getId(), brand.getName(), brand.getNameHi(), brand.getIsActive());
     }
 
     // Get only active brands (for product dropdown)
     public List<BrandResponse> getActive() {
         return brandRepository.findByIsActiveTrue()
                 .stream()
-                .map(b -> new BrandResponse(b.getId(), b.getName(), b.getIsActive()))
+                .map(b -> new BrandResponse(b.getId(), b.getName(), b.getNameHi(), b.getIsActive()))
                 .toList();
     }
 
@@ -43,7 +44,7 @@ public class BrandService {
     public List<BrandResponse> getAll() {
         return brandRepository.findAll()
                 .stream()
-                .map(b -> new BrandResponse(b.getId(), b.getName(), b.getIsActive()))
+                .map(b -> new BrandResponse(b.getId(), b.getName(), b.getNameHi(), b.getIsActive()))
                 .toList();
     }
 
@@ -51,7 +52,7 @@ public class BrandService {
     public BrandResponse getById(Long brandId) {
         Brand brand = brandRepository.findById(brandId)
                 .orElseThrow(() -> new RuntimeException("Brand not found"));
-        return new BrandResponse(brand.getId(), brand.getName(), brand.getIsActive());
+        return new BrandResponse(brand.getId(), brand.getName(), brand.getNameHi(), brand.getIsActive());
     }
 
     // Toggle brand active status (for admin)
@@ -62,7 +63,7 @@ public class BrandService {
         brand.setIsActive(!brand.getIsActive());
         brandRepository.save(brand);
 
-        return new BrandResponse(brand.getId(), brand.getName(), brand.getIsActive());
+        return new BrandResponse(brand.getId(), brand.getName(), brand.getNameHi(), brand.getIsActive());
     }
 
     // Update brand active status
@@ -73,7 +74,7 @@ public class BrandService {
         brand.setIsActive(isActive);
         brandRepository.save(brand);
 
-        return new BrandResponse(brand.getId(), brand.getName(), brand.getIsActive());
+        return new BrandResponse(brand.getId(), brand.getName(), brand.getNameHi(), brand.getIsActive());
     }
 
     // Update brand name
@@ -89,9 +90,12 @@ public class BrandService {
             }
             brand.setName(request.getBrand());
         }
+        if (request.getNameHi() != null) {
+            brand.setNameHi(request.getNameHi());
+        }
 
         brandRepository.save(brand);
-        return new BrandResponse(brand.getId(), brand.getName(), brand.getIsActive());
+        return new BrandResponse(brand.getId(), brand.getName(), brand.getNameHi(), brand.getIsActive());
     }
 
     // Delete a brand

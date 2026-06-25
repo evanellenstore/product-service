@@ -252,7 +252,7 @@ public class ProductController {
     public List<BrandResponse> getBrandsByCategory(@PathVariable Long categoryId) {
         List<Brand> brands = categoryBrandMappingService.getBrandsByCategory(categoryId);
         return brands.stream()
-                .map(b -> new BrandResponse(b.getId(), b.getName(), b.getIsActive()))
+                .map(b -> new BrandResponse(b.getId(), b.getName(), b.getNameHi(), b.getIsActive()))
                 .toList();
     }
 

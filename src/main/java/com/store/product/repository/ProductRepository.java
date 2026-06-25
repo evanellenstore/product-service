@@ -37,21 +37,21 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> fetchByNameNormalized(String norm);
 
     //========================================================================================================
-    @Query(value = " SELECT p FROM Product p WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))")
+    @Query(value = " SELECT p FROM Product p WHERE LOWER(p.nameHi) LIKE LOWER(CONCAT('%', :name, '%'))")
     List<Product> fetchByHindiName(String name);
 
     @Query("""
        SELECT p
        FROM Product p
        WHERE LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))
-          OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))
+          OR LOWER(p.nameHi) LIKE LOWER(CONCAT('%', :name, '%'))
        """)
     List<Product> fetchByNameOrHindiName(String name);
 
     @Query(value = """
        SELECT *
        FROM product p
-       WHERE REPLACE(REPLACE(REPLACE(REPLACE(p.name,' ',''),'-',''),'–',''),'—','')
+       WHERE REPLACE(REPLACE(REPLACE(REPLACE(p.nameHi,' ',''),'-',''),'–',''),'—','')
              LIKE CONCAT('%', :norm, '%')
        """, nativeQuery = true)
     List<Product> fetchByHindiNameNormalized(String norm);
@@ -62,8 +62,9 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
        WHERE LOWER(
               REPLACE(REPLACE(REPLACE(REPLACE(p.name,' ',''),'-',''),'–',''),'—','')
        ) LIKE LOWER(CONCAT('%', :norm, '%'))
-       OR REPLACE(REPLACE(REPLACE(REPLACE(p.name,' ',''),'-',''),'–',''),'—','')
-          LIKE CONCAT('%', :norm, '%')
+       OR LOWER(
+              REPLACE(REPLACE(REPLACE(REPLACE(p.nameHi,' ',''),'-',''),'–',''),'—','')
+       ) LIKE LOWER(CONCAT('%', :norm, '%'))
        """, nativeQuery = true)
      List<Product> fetchByNameOrHindiNameNormalized(String norm);
 

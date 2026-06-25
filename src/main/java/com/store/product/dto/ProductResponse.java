@@ -11,10 +11,13 @@ public class ProductResponse {
     private String sku;
     private String externalBarcode;
     private String name;
+    private String nameHi;
     private String description;
     private String category;
+    private String categoryHi;
     private Long brandId;
     private String brandName;
+    private String brandNameHi;
     private String unit;
     private Double productSize;
     private Double price;

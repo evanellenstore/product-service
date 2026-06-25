@@ -22,6 +22,9 @@ public class Brand {
     @Column(nullable = false, unique = true, length = 100)
     private String name;
 
+    @Column(nullable = true, length = 100)
+    private String nameHi;
+
     @Column(nullable = false)
     @Builder.Default
     private Boolean isActive = true;

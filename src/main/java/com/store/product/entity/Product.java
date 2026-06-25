@@ -31,9 +31,14 @@ public class Product {
     @Column(nullable = false)
     private String name;
 
+     @Column(nullable = false)
+    private String nameHi;
+
     private String description;
 
     private String category;
+
+    private String categoryHi;
 
     @Column(name = "brand_id")
     private Long brandId;

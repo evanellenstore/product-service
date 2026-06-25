@@ -8,5 +8,6 @@ import lombok.Data;
 public class BrandResponse {
     private Long id;
     private String brand;
+    private String nameHi;
     private Boolean isActive;
 }

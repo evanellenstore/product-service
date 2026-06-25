@@ -7,8 +7,10 @@ import lombok.Setter;
 public class ProductRequest {
    
     private String name;
+    private String nameHi;
     private String description;
     private String category;
+    private String categoryHi;
     private Long brandId;
     private String unit;
     private Double price;

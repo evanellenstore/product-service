@@ -8,5 +8,6 @@ import lombok.Data;
 public class CategoryResponse {
     private Long id;
     private String category;
+    private String categoryHi;
     private Boolean isActive;
 }
