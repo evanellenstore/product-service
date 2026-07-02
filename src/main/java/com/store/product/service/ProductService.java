@@ -264,53 +264,21 @@ public class ProductService {
             return List.of();
         }
 
-        String[] searchNames = name.split("-");
+        String searchNames = name;
         List<Product> products = List.of();
-
-        if ("en".equalsIgnoreCase(language)) {
-            String searchName = searchNames[0].trim();
+        
+            String searchName = searchNames.trim();
             products = productRepository.fetchByName(searchName);
 
             // Fallback normalized English search
             if (products.isEmpty()) {
-                String norm = searchName.replaceAll("[\\s\\-–—_]", "")
-                        .toLowerCase();
-
+                String norm = searchName.replaceAll("[\\s\\-–—_]", "").toLowerCase();
                 if (!norm.isBlank()) {
                     products = productRepository.fetchByNameNormalized(norm);
                 }
             }
 
-        } else if ("hi".equalsIgnoreCase(language)) {
-             String searchName = searchNames[1].trim();
-
-            products = productRepository.fetchByHindiName(searchName);
-
-            // Fallback normalized Hindi search
-            if (products.isEmpty()) {
-                String norm = searchName.replaceAll("[\\s\\-–—_]", "");
-
-                if (!norm.isBlank()) {
-                    products = productRepository.fetchByHindiNameNormalized(norm);
-                }
-            }
-
-        } else {
-
-            // Search both English and Hindi
-            String searchName = name.trim();
-            products = productRepository.fetchByNameOrHindiName(searchName);
-
-            if (products.isEmpty()) {
-                String norm = searchName.replaceAll("[\\s\\-–—_]", "")
-                        .toLowerCase();
-
-                if (!norm.isBlank()) {
-                    products = productRepository.fetchByNameOrHindiNameNormalized(norm);
-                }
-            }
-        }
-
+    
         return products.stream()
                 .map(this::mapToResponse)
                 .toList();
